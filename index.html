@@ -1,0 +1,224 @@
+<html>
+    <head>
+        <script src="web3min.js"></script>
+        
+        <title>TO DO LIST DApp</title> 
+        <style>
+            .defont {
+              color: orange;
+              border: 3px solid blueviolet;
+              background-color: black;
+              margin: 20px;
+              padding: 20px;
+              font-family:'Courier New', Courier, monospace;
+              text-align: center;
+            }
+            .defont2 {
+                color: darkmagenta;
+              margin: 4px 2px;
+              font-family:'Courier New', Courier, monospace;
+            }
+            .button {
+                border: none;
+                color: white;
+                padding: 16px 32px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+                margin: 4px 2px;
+                transition-duration: 0.4s;
+                cursor: pointer;
+            }
+
+            .button1 {
+                background-color: black;
+                color: orange;
+                border: 2px solid green;
+                font-family: 'Courier New', Courier, monospace;
+                font-weight: bold;
+            }
+            body{
+                background-image: url("Background_Photo.jpg");
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-size: cover;
+            }
+            table, th, td {
+                border: 1px solid green;
+                background-color:black;
+                color:magenta;
+            }
+            table.center {
+                margin-left: auto;
+                margin-right: auto;
+            }   
+        </style>
+            <script>
+                const address = "0x92df788CeE1b5AA15169D04A6ec6219F521848F5"
+                abi=[
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_item",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_priority",
+				"type": "uint256"
+			}
+		],
+		"name": "add_items",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_index",
+				"type": "uint256"
+			}
+		],
+		"name": "delete_items",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_item",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_priority",
+				"type": "uint256"
+			}
+		],
+		"name": "prioritize_items",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "display_items",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "bytes32",
+						"name": "item",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "uint256",
+						"name": "priority",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct todolist.List[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
+
+        async function get_accandtime(){
+            accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            account = accounts[0];
+            const tsmp = new Date();
+            
+
+        }
+        
+        async function additems(){
+            console.log("adding items");
+            accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            account = accounts[0];
+            web3 = new Web3(window.ethereum);
+            contract = new web3.eth.Contract(abi, address);
+            tn = document.getElementById('tn').value
+            console.log(tn);
+            pr = document.getElementById('pr').value
+            contract.methods.add_items(web3.utils.asciiToHex(tn),pr).send({from:account});
+        }
+        async function prioritizeitems(){
+            accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            account = accounts[0];
+            web3 = new Web3(window.ethereum);
+            contract = new web3.eth.Contract(abi, address);
+            tn = document.getElementById('tn').value
+            pr = document.getElementById('pr').value
+            contract.methods.prioritize_items(web3.utils.asciiToHex(tn),pr).send({from:account});
+        }
+        async function deleteitems(){
+            accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            account = accounts[0];
+            web3 = new Web3(window.ethereum);
+            contract = new web3.eth.Contract(abi, address);
+            index = document.getElementById("task_index").value;
+            contract.methods.delete_items(index).send({from:account});
+        }
+        async function displayitems(){
+            accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            account = accounts[0];
+            web3 = new Web3(window.ethereum);
+            contract = new web3.eth.Contract(abi, address);
+            const v = await contract.methods.display_items().call({from:account});
+            var myHTML = "";
+            var myTable = document.getElementById("mt");
+            var rowCount = myTable.rows.length;
+            for (var x=rowCount-1; x>0; x--) {
+                myTable.deleteRow(x);
+            }
+            if(v.length>=1){
+                for (var x = 0;x<v.length;x++){
+                    var i1 = web3.utils.toAscii(v[x].item);
+                    var i2 = v[x].priority;
+                    var table = document.getElementById('mt');
+                    var row = table.insertRow(x+1);
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    cell1.innerHTML = i1;
+                    cell2.innerHTML = i2;
+                }
+
+            }
+            myHTML += `<p>You have ${v.length} tasks to do</p>`
+                    document.getElementById("tab").innerHTML = myHTML;
+        }
+            
+            </script>
+    </head>
+    <body>
+        <h1 class="defont">WELCOME TO YOUR TO DO LIST</h1>
+        <h2 class="defont">SELECT A FUNCTION TO PERFORM</h2>
+        <h3 class="defont2">Enter Task Name</h3>
+         <input type="text"  id="tn" class="button button1"><br>
+         <h3 class="defont2">Enter Priority</h3>
+         <input type="number" id="pr" class="button button1"><br>
+         <h3 class="defont2">Enter TASK ID</h3>
+         <input type="number" id="task_index" class="button button1"><br>
+        <button id="add" class="button button1" onclick="additems()">ADD TASK</button>
+        <button id="prioritize" class="button button1" onclick="prioritizeitems()">PRIORITIZE TASK</button>
+        <button id="delete" class="button button1" onclick="deleteitems()">DELETE TASK</button>
+        <button id="display" class="button button1" onclick="displayitems()">DISPLAY TASKS</button>
+        <table id="mt" class="table">
+            <thead>
+                <th>TASK NAME</th>
+                <th>PRIORITY OF THE TASK</th>
+            </thead>
+        </table>
+        <div id="tab" style="color:darkblue;font-weight:bold;font-size: large;"></div>
+    </body>
+</html>
